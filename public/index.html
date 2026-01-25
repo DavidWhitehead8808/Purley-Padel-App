@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purley Sports Club - Padel League Manager</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const API_URL = '';
+        
+        const PadelLeagueApp = () => {
+          const [divisions, setDivisions] = useState([]);
+          const [selectedDivision, setSelectedDivision] = useState(null);
+          const [players, setPlayers] = useState([]);
+          const [fixtures, setFixtures] = useState([]);
+          const [activeTab, setActiveTab] = useState('table');
+          const [loading, setLoading] = useState(false);
+
+          useEffect(() => {
+            loadDivisions();
+          }, []);
+
+          useEffect(() => {
+            if (selectedDivision) {
+              loadDivisionData(selectedDivision);
+            }
+          }, [selectedDivision]);
+
+          const loadDivisions = async () => {
+            try {
+              const res = await fetch(`${API_URL}/api/divisions`);
+              const data = await res.json();
+              setDivisions(data);
+            } catch (err) {
+              console.error('Error loading divisions:', err);
+              alert('Failed to load divisions');
+            }
+          };
+
+          const loadDivisionData = async (divId) => {
+            setLoading(true);
+            try {
+              const [playersRes, fixturesRes] = await Promise.all([
+                fetch(`${API_URL}/api/divisions/${divId}/players`),
+                fetch(`${API_URL}/api/divisions/${divId}/fixtures`)
+              ]);
+              
+              const playersData = await playersRes.json();
+              const fixturesData = await fixturesRes.json();
+              
+              setPlayers(playersData);
+              setFixtures(fixturesData);
+            } catch (err) {
+              console.error('Error loading division data:', err);
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          const addDivision = async () => {
+            const name = prompt('Enter division name (e.g., Division 1):');
+            if (!name) return;
+
+            try {
+              const res = await fetch(`${API_URL}/api/divisions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+              });
+              await res.json();
+              loadDivisions();
+            } catch (err) {
+              console.error('Error adding division:', err);
+              alert('Failed to add division');
+            }
+          };
+
+          const addPlayer = async () => {
+            const name = prompt('Enter player name:');
+            if (!name) return;
+
+            try {
+              const res = await fetch(`${API_URL}/api/divisions/${selectedDivision}/players`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+              });
+              await res.json();
+              loadDivisionData(selectedDivision);
+            } catch (err) {
+              console.error('Error adding player:', err);
+              alert('Failed to add player');
+            }
+          };
+
+          const generateFixtures = async () => {
+            if (!confirm('This will regenerate all fixtures. Continue?')) return;
+
+            try {
+              await fetch(`${API_URL}/api/divisions/${selectedDivision}/generate-fixtures`, {
+                method: 'POST'
+              });
+              loadDivisionData(selectedDivision);
+              alert('Fixtures generated successfully!');
+            } catch (err) {
+              console.error('Error generating fixtures:', err);
+              alert('Failed to generate fixtures');
+            }
+          };
+
+          const recordResult = async (fixtureId, player1Name, player2Name) => {
+            const p1Score = prompt(`Score for ${player1Name}:`);
+            const p2Score = prompt(`Score for ${player2Name}:`);
+
+            if (p1Score === null || p2Score === null) return;
+
+            const player1_score = parseInt(p1Score);
+            const player2_score = parseInt(p2Score);
+
+            if (isNaN(player1_score) || isNaN(player2_score)) {
+              alert('Please enter valid scores');
+              return;
+            }
+
+            try {
+              await fetch(`${API_URL}/api/fixtures/${fixtureId}/result`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ player1_score, player2_score })
+              });
+              loadDivisionData(selectedDivision);
+            } catch (err) {
+              console.error('Error recording result:', err);
+              alert('Failed to record result');
+            }
+          };
+
+          const outstandingGames = fixtures.filter(f => !f.played);
+          const division = divisions.find(d => d.id === selectedDivision);
+
+          return (
+            
+            <div className="min-h-screen bg-gray-50">
+              <div className="bg-pink-600 text-white p-6 shadow-lg">
+                <div className="flex items-center gap-4">
+                    <img
+                      src="PSC LOGO HIGH QUALITY (1).png"
+                      alt="Purley Sports Club logo"
+                      className="h-12 w-auto"
+                    />
+                    <h1 className="text-3xl font-bold">
+                      Purley Sports Club – Padel League
+                    </h1>
+                  </div>
+                <p className="text-pink-100 mt-1">Leagues - 2026</p>
+              </div>
+
+              <div className="max-w-7xl mx-auto p-6">
+                <div className="bg-white rounded-lg shadow p-4 mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold">Divisions</h2>
+                    <button
+                      onClick={addDivision}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    >
+                      ➕ Add Division
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-2 flex-wrap">
+                    {divisions.map(div => (
+                      <button
+                        key={div.id}
+                        onClick={() => setSelectedDivision(div.id)}
+                        className={`px-4 py-2 rounded-lg font-medium ${
+                          selectedDivision === div.id
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {div.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {division && (
+                  <div>
+                    <div className="bg-white rounded-lg shadow mb-6">
+                      <div className="flex border-b">
+                        <button
+                          onClick={() => setActiveTab('table')}
+                          className={`flex-1 py-3 px-4 font-medium ${
+                            activeTab === 'table' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
+                          }`}
+                        >
+                          📊 Table
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('fixtures')}
+                          className={`flex-1 py-3 px-4 font-medium ${
+                            activeTab === 'fixtures' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
+                          }`}
+                        >
+                          📅 Fixtures ({fixtures.length})
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('outstanding')}
+                          className={`flex-1 py-3 px-4 font-medium ${
+                            activeTab === 'outstanding' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
+                          }`}
+                        >
+                          ⏳ Outstanding ({outstandingGames.length})
+                        </button>
+                      </div>
+                    </div>
+
+                    {activeTab === 'table' && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-xl font-bold">League Table</h3>
+                          <button
+                            onClick={addPlayer}
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                          >
+                            Add Player
+                          </button>
+                        </div>
+
+                        {players.length > 0 ? (
+                          <table className="w-full">
+                            <thead className="bg-gray-50 border-b-2">
+                              <tr>
+                                <th className="px-4 py-3 text-left">Pos</th>
+                                <th className="px-4 py-3 text-left">Player</th>
+                                <th className="px-4 py-3 text-center">Played</th>
+                                <th className="px-4 py-3 text-center">Won</th>
+                                <th className="px-4 py-3 text-center">Lost</th>
+                                <th className="px-4 py-3 text-center">Points</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {players.map((player, idx) => (
+                                <tr key={player.id} className="border-b hover:bg-gray-50">
+                                  <td className="px-4 py-3 font-bold">{idx + 1}</td>
+                                  <td className="px-4 py-3">{player.name}</td>
+                                  <td className="px-4 py-3 text-center">{player.played}</td>
+                                  <td className="px-4 py-3 text-center text-green-600 font-semibold">{player.won}</td>
+                                  <td className="px-4 py-3 text-center text-red-600">{player.lost}</td>
+                                  <td className="px-4 py-3 text-center font-bold text-blue-600">{player.points}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">No players added yet</p>
+                        )}
+                      </div>
+                    )}
+
+                    {activeTab === 'fixtures' && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-xl font-bold">All Fixtures</h3>
+                          {players.length >= 2 && (
+                            <button
+                              onClick={generateFixtures}
+                              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                            >
+                              Generate Fixtures
+                            </button>
+                          )}
+                        </div>
+
+                        {fixtures.length > 0 ? (
+                          <div className="space-y-3">
+                            {fixtures.map(fixture => (
+                              <div key={fixture.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex-1">
+                                    <div className="font-semibold">
+                                      {fixture.player1_name} vs {fixture.player2_name}
+                                    </div>
+                                    {fixture.played && (
+                                      <div className="text-sm text-gray-600 mt-1">
+                                        Result: {fixture.player1_score} - {fixture.player2_score}
+                                        <span className="text-green-600 font-semibold ml-2">
+                                          (Winner: {fixture.winner_id === fixture.player1_id ? fixture.player1_name : fixture.player2_name})
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {!fixture.played && (
+                                    <button
+                                      onClick={() => recordResult(fixture.id, fixture.player1_name, fixture.player2_name)}
+                                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                                    >
+                                      Record Result
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 text-center py-8">No fixtures generated yet</p>
+                        )}
+                      </div>
+                    )}
+
+                    {activeTab === 'outstanding' && (
+                      <div className="bg-white rounded-lg shadow p-6">
+                        <h3 className="text-xl font-bold mb-4">Outstanding Games</h3>
+
+                        {outstandingGames.length > 0 ? (
+                          <div className="space-y-3">
+                            {outstandingGames.map(fixture => (
+                              <div key={fixture.id} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex-1">
+                                    <div className="font-semibold">
+                                      {fixture.player1_name} vs {fixture.player2_name}
+                                    </div>
+                                    <div className="text-sm text-orange-600 mt-1">
+                                      Awaiting result
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => recordResult(fixture.id, fixture.player1_name, fixture.player2_name)}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                                  >
+                                    Record Result
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className="text-green-600 font-semibold text-lg">All games completed! 🎉</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!selectedDivision && divisions.length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-12 text-center">
+                    <p className="text-gray-600 text-lg">Select a division to get started</p>
+                  </div>
+                )}
+
+                {divisions.length === 0 && (
+                  <div className="bg-white rounded-lg shadow p-12 text-center">
+                    <p className="text-gray-600 text-lg mb-4">No divisions created yet</p>
+                    <button
+                      onClick={addDivision}
+                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                    >
+                      ➕ Create Your First Division
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<PadelLeagueApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
