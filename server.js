@@ -67,7 +67,19 @@ app.get('/api/divisions/:id/players', async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      'SELECT * FROM players WHERE division_id = $1 ORDER BY points DESC, (won - lost) DESC',
+      `
+      SELECT
+        id,
+        name,
+        division_id,
+        played,
+        won  AS sets_won,
+        lost AS sets_lost,
+        points
+      FROM players
+      WHERE division_id = $1
+      ORDER BY points DESC, (won - lost) DESC, name ASC;
+      `,
       [id]
     );
     res.json(result.rows);
@@ -76,6 +88,7 @@ app.get('/api/divisions/:id/players', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
 
 app.post('/api/divisions/:id/players', async (req, res) => {
   const { id } = req.params;
