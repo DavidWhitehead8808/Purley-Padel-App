@@ -15,80 +15,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Lightweight migration to support set-based scoring without breaking existing DBs.
-// - We keep the DB table name as `players` (UI can call them Teams).
-// - We repurpose players.won/lost/points to represent sets won/sets lost/total points (1 set = 1 point).
-// - We add fixture columns to store per-match set details so we can recalculate safely.
 async function runMigrations() {
-  const client = await pool.connect();
+  // Add columns needed for set-based scoring (safe to run multiple times)
+  await pool.query(`ALTER TABLE fixtures
+    ADD COLUMN IF NOT EXISTS set_scores JSONB,
+    ADD COLUMN IF NOT EXISTS player1_sets INTEGER DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS player2_sets INTEGER DEFAULT 0;`);
+}
+
+async function init() {
   try {
-    await client.query('BEGIN');
-    // Fixtures: store set breakdown and computed set totals.
-    await client.query('ALTER TABLE fixtures ADD COLUMN IF NOT EXISTS set_scores JSONB');
-    await client.query('ALTER TABLE fixtures ADD COLUMN IF NOT EXISTS player1_sets INTEGER');
-    await client.query('ALTER TABLE fixtures ADD COLUMN IF NOT EXISTS player2_sets INTEGER');
-    await client.query('COMMIT');
+    await pool.query('SELECT 1');
+    await runMigrations();
+    console.log('Database connected and migrations applied');
   } catch (err) {
-    await client.query('ROLLBACK');
-    console.error('Migration error:', err);
-  } finally {
-    client.release();
+    console.error('Startup error (db/migrations):', err);
+    process.exit(1);
   }
+
+  app.listen(port, () => {
+    console.log(`Padel League Manager running on port ${port}`);
+  });
 }
 
-// Validate and compute sets won from a grid payload like: [[6,0],[6,4],[0,6]]
-function computeSetsFromGrid(setScores) {
-  if (!Array.isArray(setScores) || setScores.length === 0) {
-    throw new Error('set_scores must be a non-empty array');
-  }
-  if (setScores.length > 3) {
-    throw new Error('Maximum of 3 sets');
-  }
-
-  let p1Sets = 0;
-  let p2Sets = 0;
-  const cleaned = [];
-
-  for (const s of setScores) {
-    if (!Array.isArray(s) || s.length !== 2) throw new Error('Each set must be [team1, team2]');
-    const a = Number(s[0]);
-    const b = Number(s[1]);
-    if (!Number.isInteger(a) || !Number.isInteger(b)) throw new Error('Set scores must be integers');
-    if (a < 0 || b < 0) throw new Error('Set scores must be >= 0');
-    if (a === b) throw new Error('Set cannot be tied');
-
-    // Basic padel/tennis-like sanity checks (kept permissive):
-    // Winner should have at least 6 games, except allow 0-0 is already prevented.
-    const winner = Math.max(a, b);
-    const loser = Math.min(a, b);
-    const diff = winner - loser;
-    const looksLikeSet = (winner === 6 && diff >= 2) || (winner === 7 && (diff === 1 || diff === 2));
-    // If user enters something unusual (e.g. 8-6), still reject to avoid corrupt standings.
-    if (!looksLikeSet) {
-      throw new Error(`Invalid set score ${a}-${b}. Use e.g. 6-0, 6-4, 7-5, 7-6`);
-    }
-
-    if (a > b) p1Sets += 1;
-    else p2Sets += 1;
-    cleaned.push([a, b]);
-  }
-
-  if (p1Sets === p2Sets) {
-    throw new Error('Match result cannot be a draw');
-  }
-
-  return { p1Sets, p2Sets, cleaned };
-}
-
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('Database connection error:', err);
-  } else {
-    console.log('Database connected successfully');
-  }
-});
-
-runMigrations().catch((e) => console.error('Migration run error:', e));
 
 app.get('/api/divisions', async (req, res) => {
   try {
@@ -182,13 +131,6 @@ app.post('/api/divisions/:id/generate-fixtures', async (req, res) => {
     }
     
     await client.query('DELETE FROM fixtures WHERE division_id = $1', [id]);
-
-    // Reset standings for this division when regenerating fixtures.
-    // (played = matches played, won/lost = sets won/sets lost, points = sets won)
-    await client.query(
-      'UPDATE players SET played = 0, won = 0, lost = 0, points = 0 WHERE division_id = $1',
-      [id]
-    );
     
     for (let i = 0; i < players.length; i++) {
       for (let j = i + 1; j < players.length; j++) {
@@ -224,14 +166,62 @@ app.post('/api/divisions/:id/generate-fixtures', async (req, res) => {
 
 app.put('/api/fixtures/:id/result', async (req, res) => {
   const { id } = req.params;
-  const { player1_score, player2_score, set_scores } = req.body;
+
+  // New UI sends: { set_scores: [[6,0],[6,4],[0,6]] } (up to 3 sets)
+  const { set_scores, player1_score, player2_score } = req.body;
+
+  // Backwards compatibility: if old payload used, store as a single "set" (not ideal but avoids crashes)
+  let normalizedSetScores = null;
+  if (Array.isArray(set_scores)) {
+    normalizedSetScores = set_scores;
+  } else if (
+    Number.isInteger(player1_score) &&
+    Number.isInteger(player2_score) &&
+    player1_score !== player2_score
+  ) {
+    normalizedSetScores = [[player1_score, player2_score]];
+  }
+
+  if (!normalizedSetScores || normalizedSetScores.length === 0) {
+    return res.status(400).json({ error: 'Expected set_scores: [[p1,p2], ...]' });
+  }
+  if (normalizedSetScores.length > 3) {
+    return res.status(400).json({ error: 'A maximum of 3 sets is allowed' });
+  }
+
+  // Count set wins
+  let p1Sets = 0;
+  let p2Sets = 0;
+
+  for (const s of normalizedSetScores) {
+    if (!Array.isArray(s) || s.length !== 2) {
+      return res.status(400).json({ error: 'Each set must be [player1Games, player2Games]' });
+    }
+    const [aRaw, bRaw] = s;
+    const a = Number(aRaw);
+    const b = Number(bRaw);
+
+    if (!Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0) {
+      return res.status(400).json({ error: 'Set scores must be non-negative integers' });
+    }
+    if (a === b) {
+      return res.status(400).json({ error: 'A set cannot end in a tie' });
+    }
+
+    if (a > b) p1Sets += 1;
+    else p2Sets += 1;
+  }
+
+  if (p1Sets === p2Sets) {
+    return res.status(400).json({ error: 'Match cannot end tied on sets' });
+  }
+
   const client = await pool.connect();
-  
   try {
     await client.query('BEGIN');
-    
+
     const fixtureResult = await client.query(
-      'SELECT * FROM fixtures WHERE id = $1',
+      'SELECT * FROM fixtures WHERE id = $1 FOR UPDATE',
       [id]
     );
     const fixture = fixtureResult.rows[0];
@@ -240,77 +230,106 @@ app.put('/api/fixtures/:id/result', async (req, res) => {
       return res.status(404).json({ error: 'Fixture not found' });
     }
 
-    // If this fixture already has a result, undo it first (recalculate mode).
+    const p1Id = fixture.player1_id;
+    const p2Id = fixture.player2_id;
+
+    // If the fixture already had a result, undo its previous impact before applying the new one.
     if (fixture.played) {
-      const prevP1Sets = Number(fixture.player1_sets) || 0;
-      const prevP2Sets = Number(fixture.player2_sets) || 0;
+      const oldP1Sets = Number.isInteger(fixture.player1_sets) ? fixture.player1_sets : null;
+      const oldP2Sets = Number.isInteger(fixture.player2_sets) ? fixture.player2_sets : null;
 
-      await client.query(
-        'UPDATE players SET played = played - 1, won = won - $1, lost = lost - $2, points = points - $1 WHERE id = $3',
-        [prevP1Sets, prevP2Sets, fixture.player1_id]
-      );
-      await client.query(
-        'UPDATE players SET played = played - 1, won = won - $1, lost = lost - $2, points = points - $1 WHERE id = $3',
-        [prevP2Sets, prevP1Sets, fixture.player2_id]
-      );
-    }
+      if (oldP1Sets !== null && oldP2Sets !== null) {
+        // Undo set-based stats
+        await client.query(
+          `UPDATE players
+           SET played = GREATEST(played - 1, 0),
+               won = won - $2,
+               lost = lost - $3,
+               points = points - $2
+           WHERE id = $1`,
+          [p1Id, oldP1Sets, oldP2Sets]
+        );
 
-    let p1Sets;
-    let p2Sets;
-    let cleaned;
+        await client.query(
+          `UPDATE players
+           SET played = GREATEST(played - 1, 0),
+               won = won - $2,
+               lost = lost - $3,
+               points = points - $2
+           WHERE id = $1`,
+          [p2Id, oldP2Sets, oldP1Sets]
+        );
+      } else if (fixture.winner_id) {
+        // Undo legacy match-based stats (won+1 points+3, loser lost+1)
+        const oldWinner = fixture.winner_id;
+        const oldLoser = oldWinner === p1Id ? p2Id : p1Id;
 
-    if (set_scores !== undefined) {
-      ({ p1Sets, p2Sets, cleaned } = computeSetsFromGrid(set_scores));
-    } else {
-      // Backwards-compatible fallback if callers still send simple totals.
-      const a = Number(player1_score);
-      const b = Number(player2_score);
-      if (!Number.isInteger(a) || !Number.isInteger(b)) {
-        throw new Error('Either provide set_scores or integer player1_score/player2_score');
+        await client.query(
+          `UPDATE players
+           SET played = GREATEST(played - 1, 0),
+               won = GREATEST(won - 1, 0),
+               points = GREATEST(points - 3, 0)
+           WHERE id = $1`,
+          [oldWinner]
+        );
+
+        await client.query(
+          `UPDATE players
+           SET played = GREATEST(played - 1, 0),
+               lost = GREATEST(lost - 1, 0)
+           WHERE id = $1`,
+          [oldLoser]
+        );
       }
-      if (a === b) throw new Error('Match result cannot be a draw');
-      p1Sets = a;
-      p2Sets = b;
-      cleaned = null;
     }
 
-    const winnerId = p1Sets > p2Sets ? fixture.player1_id : fixture.player2_id;
+    const winnerId = p1Sets > p2Sets ? p1Id : p2Id;
 
+    // Save fixture result
     await client.query(
-      `UPDATE fixtures 
-         SET player1_score = $1,
-             player2_score = $2,
-             player1_sets = $1,
-             player2_sets = $2,
-             set_scores = COALESCE($3, set_scores),
-             winner_id = $4,
-             played = TRUE,
-             match_date = NOW()
+      `UPDATE fixtures
+       SET set_scores = $1,
+           player1_sets = $2,
+           player2_sets = $3,
+           winner_id = $4,
+           played = TRUE,
+           match_date = NOW()
        WHERE id = $5`,
-      [p1Sets, p2Sets, cleaned ? JSON.stringify(cleaned) : null, winnerId, id]
+      [JSON.stringify(normalizedSetScores), p1Sets, p2Sets, winnerId, id]
     );
 
-    // Update standings: played = matches played, won/lost = sets won/sets lost, points = sets won (1 set = 1 point)
+    // Apply new set-based stats
     await client.query(
-      'UPDATE players SET played = played + 1, won = won + $1, lost = lost + $2, points = points + $1 WHERE id = $3',
-      [p1Sets, p2Sets, fixture.player1_id]
+      `UPDATE players
+       SET played = played + 1,
+           won = won + $2,
+           lost = lost + $3,
+           points = points + $2
+       WHERE id = $1`,
+      [p1Id, p1Sets, p2Sets]
     );
 
     await client.query(
-      'UPDATE players SET played = played + 1, won = won + $1, lost = lost + $2, points = points + $1 WHERE id = $3',
-      [p2Sets, p1Sets, fixture.player2_id]
+      `UPDATE players
+       SET played = played + 1,
+           won = won + $2,
+           lost = lost + $3,
+           points = points + $2
+       WHERE id = $1`,
+      [p2Id, p2Sets, p1Sets]
     );
-    
+
     await client.query('COMMIT');
-    res.json({ success: true, player1_sets: p1Sets, player2_sets: p2Sets });
+    res.json({ success: true, player1_sets: p1Sets, player2_sets: p2Sets, set_scores: normalizedSetScores });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error(err);
-    res.status(400).json({ error: err.message || 'Database error' });
+    res.status(500).json({ error: 'Database error' });
   } finally {
     client.release();
   }
 });
+
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
