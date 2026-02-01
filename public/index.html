@@ -444,7 +444,7 @@
                                           <>
                                             Result (sets): {fixture.player1_sets ?? '?'} - {fixture.player2_sets ?? '?'}
                                             <span className="ml-2">
-                                              ({fixture.set_scores.map(s => `${s.p1}-${s.p2}`).join(', ')})
+                                             ({fixture.set_scores.map(s => `${s[0]}-${s[1]}`).join(', ')})
                                             </span>
                                           </>
                                         ) : (
