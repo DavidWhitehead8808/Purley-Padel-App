@@ -1,541 +1,625 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Purley Sports Club - Padel League Manager</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root"></div>
-    
+
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        
-        const API_URL = '';
-        
-        const PadelLeagueApp = () => {
-          const [divisions, setDivisions] = useState([]);
-          const [selectedDivision, setSelectedDivision] = useState(null);
-          // NOTE: DB/API still calls these "players". In the UI we refer to them as "Teams".
-          const [players, setPlayers] = useState([]);
-          const [fixtures, setFixtures] = useState([]);
-          const [activeTab, setActiveTab] = useState('table');
-          const [loading, setLoading] = useState(false);
+      const { useState, useEffect } = React;
 
-          const [scoreModal, setScoreModal] = useState({ open: false, fixture: null });
-          const [scoreGrid, setScoreGrid] = useState({ t1: ['', '', ''], t2: ['', '', ''] });
+      const API_URL = "";
 
-          useEffect(() => {
-            loadDivisions();
-          }, []);
+      const PadelLeagueApp = () => {
+        const [divisions, setDivisions] = useState([]);
+        const [selectedDivision, setSelectedDivision] = useState(null);
+        // NOTE: DB/API still calls these "players". In the UI we refer to them as "Teams".
+        const [players, setPlayers] = useState([]);
+        const [fixtures, setFixtures] = useState([]);
+        const [activeTab, setActiveTab] = useState("table");
+        const [loading, setLoading] = useState(false);
 
-          useEffect(() => {
-            if (selectedDivision) {
-              loadDivisionData(selectedDivision);
-            }
-          }, [selectedDivision]);
+        const [scoreModal, setScoreModal] = useState({
+          open: false,
+          fixture: null,
+        });
+        const [scoreGrid, setScoreGrid] = useState({
+          t1: ["", "", ""],
+          t2: ["", "", ""],
+        });
 
-          const loadDivisions = async () => {
-            try {
-              const res = await fetch(`${API_URL}/api/divisions`);
-              const data = await res.json();
-              setDivisions(data);
-            } catch (err) {
-              console.error('Error loading divisions:', err);
-              alert('Failed to load divisions');
-            }
-          };
+        useEffect(() => {
+          loadDivisions();
+        }, []);
 
-          const loadDivisionData = async (divId) => {
-            setLoading(true);
-            try {
-              const [playersRes, fixturesRes] = await Promise.all([
-                fetch(`${API_URL}/api/divisions/${divId}/players`),
-                fetch(`${API_URL}/api/divisions/${divId}/fixtures`)
-              ]);
-              
-              const playersData = await playersRes.json();
-              const fixturesData = await fixturesRes.json();
-              
-              setPlayers(playersData);
-              setFixtures(fixturesData);
-            } catch (err) {
-              console.error('Error loading division data:', err);
-            } finally {
-              setLoading(false);
-            }
-          };
+        useEffect(() => {
+          if (selectedDivision) {
+            loadDivisionData(selectedDivision);
+          }
+        }, [selectedDivision]);
 
-          const addDivision = async () => {
-            const name = prompt('Enter division name (e.g., Division 1):');
-            if (!name) return;
+        const loadDivisions = async () => {
+          try {
+            const res = await fetch(`${API_URL}/api/divisions`);
+            const data = await res.json();
+            setDivisions(data);
+          } catch (err) {
+            console.error("Error loading divisions:", err);
+            alert("Failed to load divisions");
+          }
+        };
 
-            try {
-              const res = await fetch(`${API_URL}/api/divisions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-              });
-              await res.json();
-              loadDivisions();
-            } catch (err) {
-              console.error('Error adding division:', err);
-              alert('Failed to add division');
-            }
-          };
+        const loadDivisionData = async (divId) => {
+          setLoading(true);
+          try {
+            const [playersRes, fixturesRes] = await Promise.all([
+              fetch(`${API_URL}/api/divisions/${divId}/players`),
+              fetch(`${API_URL}/api/divisions/${divId}/fixtures`),
+            ]);
 
-          const addTeam = async () => {
-            const name = prompt('Enter team name:');
-            if (!name) return;
+            const playersData = await playersRes.json();
+            const fixturesData = await fixturesRes.json();
 
-            try {
-              const res = await fetch(`${API_URL}/api/divisions/${selectedDivision}/players`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-              });
-              await res.json();
-              loadDivisionData(selectedDivision);
-            } catch (err) {
-              console.error('Error adding team:', err);
-              alert('Failed to add team');
-            }
-          };
+            setPlayers(playersData);
+            setFixtures(fixturesData);
+          } catch (err) {
+            console.error("Error loading division data:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
 
-          const generateFixtures = async () => {
-            if (!confirm('This will regenerate all fixtures. Continue?')) return;
+        const addDivision = async () => {
+          const name = prompt("Enter division name (e.g., Division 1):");
+          if (!name) return;
 
-            try {
-              await fetch(`${API_URL}/api/divisions/${selectedDivision}/generate-fixtures`, {
-                method: 'POST'
-              });
-              loadDivisionData(selectedDivision);
-              alert('Fixtures generated successfully!');
-            } catch (err) {
-              console.error('Error generating fixtures:', err);
-              alert('Failed to generate fixtures');
-            }
-          };
-
-          const openScoreModal = (fixture) => {
-            setScoreGrid({ t1: ['', '', ''], t2: ['', '', ''] });
-            setScoreModal({ open: true, fixture });
-          };
-
-          const closeScoreModal = () => {
-            setScoreModal({ open: false, fixture: null });
-          };
-
-          const setGridValue = (teamKey, idx, value) => {
-            // Only allow digits, empty, and max 1-2 chars.
-            const cleaned = value.replace(/[^0-9]/g, '').slice(0, 2);
-            setScoreGrid(prev => {
-              const next = { ...prev, [teamKey]: [...prev[teamKey]] };
-              next[teamKey][idx] = cleaned;
-              return next;
+          try {
+            const res = await fetch(`${API_URL}/api/divisions`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name }),
             });
-          };
+            await res.json();
+            loadDivisions();
+          } catch (err) {
+            console.error("Error adding division:", err);
+            alert("Failed to add division");
+          }
+        };
 
-          const submitSetScores = async () => {
-            const fixture = scoreModal.fixture;
-            if (!fixture) return;
+        const addTeam = async () => {
+          const name = prompt("Enter team name:");
+          if (!name) return;
 
-            // Build up to 3 sets. Skip empty set rows.
-            const set_scores = [];
-            for (let i = 0; i < 3; i++) {
-              const a = scoreGrid.t1[i];
-              const b = scoreGrid.t2[i];
-              if ((a === '' || a === null || a === undefined) && (b === '' || b === null || b === undefined)) {
-                continue;
-              }
-              const an = Number(a);
-              const bn = Number(b);
-              if (!Number.isInteger(an) || !Number.isInteger(bn)) {
-                alert('Please enter valid numbers for each set.');
-                return;
-              }
-              if (an === bn) {
-                alert('A set cannot end in a tie.');
-                return;
-              }
-              set_scores.push([an, bn]);
+          try {
+            const res = await fetch(
+              `${API_URL}/api/divisions/${selectedDivision}/players`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name }),
+              },
+            );
+            await res.json();
+            loadDivisionData(selectedDivision);
+          } catch (err) {
+            console.error("Error adding team:", err);
+            alert("Failed to add team");
+          }
+        };
+
+        const generateFixtures = async () => {
+          if (!confirm("This will regenerate all fixtures. Continue?")) return;
+
+          try {
+            await fetch(
+              `${API_URL}/api/divisions/${selectedDivision}/generate-fixtures`,
+              {
+                method: "POST",
+              },
+            );
+            loadDivisionData(selectedDivision);
+            alert("Fixtures generated successfully!");
+          } catch (err) {
+            console.error("Error generating fixtures:", err);
+            alert("Failed to generate fixtures");
+          }
+        };
+
+        const openScoreModal = (fixture) => {
+          setScoreGrid({ t1: ["", "", ""], t2: ["", "", ""] });
+          setScoreModal({ open: true, fixture });
+        };
+
+        const closeScoreModal = () => {
+          setScoreModal({ open: false, fixture: null });
+        };
+
+        const setGridValue = (teamKey, idx, value) => {
+          // Only allow digits, empty, and max 1-2 chars.
+          const cleaned = value.replace(/[^0-9]/g, "").slice(0, 2);
+          setScoreGrid((prev) => {
+            const next = { ...prev, [teamKey]: [...prev[teamKey]] };
+            next[teamKey][idx] = cleaned;
+            return next;
+          });
+        };
+
+        const submitSetScores = async () => {
+          const fixture = scoreModal.fixture;
+          if (!fixture) return;
+
+          // Build up to 3 sets. Skip empty set rows.
+          const set_scores = [];
+          for (let i = 0; i < 3; i++) {
+            const a = scoreGrid.t1[i];
+            const b = scoreGrid.t2[i];
+            if (
+              (a === "" || a === null || a === undefined) &&
+              (b === "" || b === null || b === undefined)
+            ) {
+              continue;
             }
-
-            if (set_scores.length === 0) {
-              alert('Please enter at least one set score.');
+            const an = Number(a);
+            const bn = Number(b);
+            if (!Number.isInteger(an) || !Number.isInteger(bn)) {
+              alert("Please enter valid numbers for each set.");
               return;
             }
-
-            try {
-              await fetch(`${API_URL}/api/fixtures/${fixture.id}/result`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ set_scores })
-              });
-              closeScoreModal();
-              loadDivisionData(selectedDivision);
-            } catch (err) {
-              console.error('Error recording result:', err);
-              alert('Failed to record result');
+            if (an === bn) {
+              alert("A set cannot end in a tie.");
+              return;
             }
-          };
+            set_scores.push([an, bn]);
+          }
 
-          const outstandingGames = fixtures.filter(f => !f.played);
-          const division = divisions.find(d => d.id === selectedDivision);
+          if (set_scores.length === 0) {
+            alert("Please enter at least one set score.");
+            return;
+          }
 
-          // Defensive client-side ordering (backend should already do this).
-          const sortedPlayers = [...players].sort((a, b) => {
-            const ap = Number(a.points ?? a.sets_won ?? a.won ?? 0);
-            const bp = Number(b.points ?? b.sets_won ?? b.won ?? 0);
-            if (bp !== ap) return bp - ap;
+          try {
+            await fetch(`${API_URL}/api/fixtures/${fixture.id}/result`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ set_scores }),
+            });
+            closeScoreModal();
+            loadDivisionData(selectedDivision);
+          } catch (err) {
+            console.error("Error recording result:", err);
+            alert("Failed to record result");
+          }
+        };
 
-            const asd = Number((a.sets_won ?? 0) - (a.sets_lost ?? 0));
-            const bsd = Number((b.sets_won ?? 0) - (b.sets_lost ?? 0));
-            if (bsd !== asd) return bsd - asd;
+        const outstandingGames = fixtures.filter((f) => !f.played);
+        const division = divisions.find((d) => d.id === selectedDivision);
 
-            return String(a.name ?? '').localeCompare(String(b.name ?? ''));
-          });
+        // Defensive client-side ordering (backend should already do this).
+        const sortedPlayers = [...players].sort((a, b) => {
+          const ap = Number(a.points ?? a.sets_won ?? a.won ?? 0);
+          const bp = Number(b.points ?? b.sets_won ?? b.won ?? 0);
+          if (bp !== ap) return bp - ap;
 
-          return (
-            
-            <div className="min-h-screen bg-gray-50">
-              <div className="bg-[#C25C89] text-white p-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                    <img
-                      src="PSC LOGO HIGH QUALITY (1).png"
-                      alt="Purley Sports Club logo"
-                      className="h-12 w-auto"
-                    />
-                    <h1 className="text-3xl font-bold">
-                      Purley Sports Club – Padel League
-                    </h1>
+          const asd = Number((a.sets_won ?? 0) - (a.sets_lost ?? 0));
+          const bsd = Number((b.sets_won ?? 0) - (b.sets_lost ?? 0));
+          if (bsd !== asd) return bsd - asd;
+
+          return String(a.name ?? "").localeCompare(String(b.name ?? ""));
+        });
+
+        return (
+          <div className="min-h-screen bg-gray-50">
+            <div className="bg-[#C25C89] text-white p-6 shadow-lg">
+              <div className="flex items-center gap-4">
+                <img
+                  src="PSC LOGO HIGH QUALITY (1).png"
+                  alt="Purley Sports Club logo"
+                  className="h-12 w-auto"
+                />
+                <h1 className="text-3xl font-bold">
+                  Purley Sports Club – Padel League
+                </h1>
+              </div>
+              <p className="text-pink-100 mt-1">Leagues - 2026</p>
+            </div>
+
+            {/* Score upload modal */}
+            {scoreModal.open && scoreModal.fixture && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                <div className="w-full max-w-lg rounded-lg bg-white shadow-xl">
+                  <div className="border-b p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold">Upload Score</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {scoreModal.fixture.player1_name} vs{" "}
+                          {scoreModal.fixture.player2_name}
+                        </p>
+                      </div>
+                      <button
+                        onClick={closeScoreModal}
+                        className="text-gray-500 hover:text-gray-800 text-xl leading-none"
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
-                <p className="text-pink-100 mt-1">Leagues - 2026</p>
+
+                  <div className="p-4">
+                    <div className="text-sm text-gray-600 mb-3">
+                      Enter each set score. Leave Set 3 blank if not needed.
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <div className="min-w-[420px]">
+                        <div className="grid grid-cols-4 gap-2 items-center text-sm font-semibold text-gray-700">
+                          <div></div>
+                          <div className="text-center">Set 1</div>
+                          <div className="text-center">Set 2</div>
+                          <div className="text-center">Set 3</div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2 items-center mt-2">
+                          <div className="text-sm font-semibold">
+                            {scoreModal.fixture.player1_name}
+                          </div>
+                          {[0, 1, 2].map((i) => (
+                            <input
+                              key={`t1-${i}`}
+                              inputMode="numeric"
+                              className="border rounded-lg px-3 py-2 text-center"
+                              placeholder="-"
+                              value={scoreGrid.t1[i]}
+                              onChange={(e) =>
+                                setGridValue("t1", i, e.target.value)
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2 items-center mt-2">
+                          <div className="text-sm font-semibold">
+                            {scoreModal.fixture.player2_name}
+                          </div>
+                          {[0, 1, 2].map((i) => (
+                            <input
+                              key={`t2-${i}`}
+                              inputMode="numeric"
+                              className="border rounded-lg px-3 py-2 text-center"
+                              placeholder="-"
+                              value={scoreGrid.t2[i]}
+                              onChange={(e) =>
+                                setGridValue("t2", i, e.target.value)
+                              }
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-6">
+                      <button
+                        onClick={closeScoreModal}
+                        className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={submitSetScores}
+                        className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                      >
+                        Save Score
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-7xl mx-auto p-6">
+              <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">Divisions</h2>
+                  <button
+                    onClick={addDivision}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  >
+                    ➕ Add Division
+                  </button>
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  {divisions.map((div) => (
+                    <button
+                      key={div.id}
+                      onClick={() => setSelectedDivision(div.id)}
+                      className={`px-4 py-2 rounded-lg font-medium ${
+                        selectedDivision === div.id
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {div.name}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Score upload modal */}
-              {scoreModal.open && scoreModal.fixture && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                  <div className="w-full max-w-lg rounded-lg bg-white shadow-xl">
-                    <div className="border-b p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="text-lg font-bold">Upload Score</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {scoreModal.fixture.player1_name} vs {scoreModal.fixture.player2_name}
-                          </p>
-                        </div>
-                        <button
-                          onClick={closeScoreModal}
-                          className="text-gray-500 hover:text-gray-800 text-xl leading-none"
-                          aria-label="Close"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="text-sm text-gray-600 mb-3">
-                        Enter each set score. Leave Set 3 blank if not needed.
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <div className="min-w-[420px]">
-                          <div className="grid grid-cols-4 gap-2 items-center text-sm font-semibold text-gray-700">
-                            <div></div>
-                            <div className="text-center">Set 1</div>
-                            <div className="text-center">Set 2</div>
-                            <div className="text-center">Set 3</div>
-                          </div>
-
-                          <div className="grid grid-cols-4 gap-2 items-center mt-2">
-                            <div className="text-sm font-semibold">{scoreModal.fixture.player1_name}</div>
-                            {[0,1,2].map(i => (
-                              <input
-                                key={`t1-${i}`}
-                                inputMode="numeric"
-                                className="border rounded-lg px-3 py-2 text-center"
-                                placeholder="-"
-                                value={scoreGrid.t1[i]}
-                                onChange={(e) => setGridValue('t1', i, e.target.value)}
-                              />
-                            ))}
-                          </div>
-
-                          <div className="grid grid-cols-4 gap-2 items-center mt-2">
-                            <div className="text-sm font-semibold">{scoreModal.fixture.player2_name}</div>
-                            {[0,1,2].map(i => (
-                              <input
-                                key={`t2-${i}`}
-                                inputMode="numeric"
-                                className="border rounded-lg px-3 py-2 text-center"
-                                placeholder="-"
-                                value={scoreGrid.t2[i]}
-                                onChange={(e) => setGridValue('t2', i, e.target.value)}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end gap-2 mt-6">
-                        <button
-                          onClick={closeScoreModal}
-                          className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={submitSetScores}
-                          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                        >
-                          Save Score
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="max-w-7xl mx-auto p-6">
-                <div className="bg-white rounded-lg shadow p-4 mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-semibold">Divisions</h2>
-                    <button
-                      onClick={addDivision}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                    >
-                      ➕ Add Division
-                    </button>
-                  </div>
-                  
-                  <div className="flex gap-2 flex-wrap">
-                    {divisions.map(div => (
+              {division && (
+                <div>
+                  <div className="bg-white rounded-lg shadow mb-6">
+                    <div className="flex border-b">
                       <button
-                        key={div.id}
-                        onClick={() => setSelectedDivision(div.id)}
-                        className={`px-4 py-2 rounded-lg font-medium ${
-                          selectedDivision === div.id
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        onClick={() => setActiveTab("table")}
+                        className={`flex-1 py-3 px-4 font-medium ${
+                          activeTab === "table"
+                            ? "border-b-2 border-blue-600 text-blue-600"
+                            : "text-gray-600"
                         }`}
                       >
-                        {div.name}
+                        📊 Table
                       </button>
-                    ))}
+                      <button
+                        onClick={() => setActiveTab("fixtures")}
+                        className={`flex-1 py-3 px-4 font-medium ${
+                          activeTab === "fixtures"
+                            ? "border-b-2 border-blue-600 text-blue-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        📅 Fixtures ({fixtures.length})
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("outstanding")}
+                        className={`flex-1 py-3 px-4 font-medium ${
+                          activeTab === "outstanding"
+                            ? "border-b-2 border-blue-600 text-blue-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        ⏳ Outstanding ({outstandingGames.length})
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {division && (
-                  <div>
-                    <div className="bg-white rounded-lg shadow mb-6">
-                      <div className="flex border-b">
+                  {activeTab === "table" && (
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold">League Table</h3>
                         <button
-                          onClick={() => setActiveTab('table')}
-                          className={`flex-1 py-3 px-4 font-medium ${
-                            activeTab === 'table' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
-                          }`}
+                          onClick={addTeam}
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
                         >
-                          📊 Table
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('fixtures')}
-                          className={`flex-1 py-3 px-4 font-medium ${
-                            activeTab === 'fixtures' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
-                          }`}
-                        >
-                          📅 Fixtures ({fixtures.length})
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('outstanding')}
-                          className={`flex-1 py-3 px-4 font-medium ${
-                            activeTab === 'outstanding' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'
-                          }`}
-                        >
-                          ⏳ Outstanding ({outstandingGames.length})
+                          Add Team
                         </button>
                       </div>
-                    </div>
 
-                    {activeTab === 'table' && (
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-xl font-bold">League Table</h3>
-                          <button
-                            onClick={addTeam}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                          >
-                            Add Team
-                          </button>
-                        </div>
-
-                        {players.length > 0 ? (
-                          <table className="w-full">
-                            <thead className="bg-gray-50 border-b-2">
-                              <tr>
-                                <th className="px-4 py-3 text-left">Pos</th>
-                                <th className="px-4 py-3 text-left">Team</th>
-                                <th className="px-4 py-3 text-center">Matches Played</th>
-                                <th className="px-4 py-3 text-center">Sets Won</th>
-                                <th className="px-4 py-3 text-center">Sets Lost</th>
-                                <th className="px-4 py-3 text-center">Total Points</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedPlayers.map((player, idx) => {
-                                const total = sortedPlayers.length;
-                                const isTop2 = idx < 2;
-                                const isBottom4 = idx >= Math.max(total - 4, 0);
-                                const rowClass = isTop2
-                                  ? 'bg-green-50'
-                                  : isBottom4
-                                    ? 'bg-red-50'
-                                    : '';
-                                return (
-                                <tr key={player.id} className={`border-b hover:bg-gray-50 ${rowClass}`}>
-                                  <td className="px-4 py-3 font-bold">{idx + 1}</td>
+                      {players.length > 0 ? (
+                        <table className="w-full">
+                          <thead className="bg-gray-50 border-b-2">
+                            <tr>
+                              <th className="px-4 py-3 text-left">Pos</th>
+                              <th className="px-4 py-3 text-left">Team</th>
+                              <th className="px-4 py-3 text-center">
+                                Matches Played
+                              </th>
+                              <th className="px-4 py-3 text-center">
+                                Sets Won
+                              </th>
+                              <th className="px-4 py-3 text-center">
+                                Sets Lost
+                              </th>
+                              <th className="px-4 py-3 text-center">
+                                Total Points
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sortedPlayers.map((player, idx) => {
+                              const total = sortedPlayers.length;
+                              const isTop4 = idx < 4;
+                              const rowClass = isTop4 ? "bg-green-50" : "";
+                              return (
+                                <tr
+                                  key={player.id}
+                                  className={`border-b hover:bg-gray-50 ${rowClass}`}
+                                >
+                                  <td className="px-4 py-3 font-bold">
+                                    {idx + 1}
+                                  </td>
                                   <td className="px-4 py-3">{player.name}</td>
-                                  <td className="px-4 py-3 text-center">{player.played}</td>
-                                  <td className="px-4 py-3 text-center text-green-600 font-semibold">{player.sets_won ?? 0}</td>
-                                  <td className="px-4 py-3 text-center text-red-600">{player.sets_lost ?? 0}</td>
-                                  <td className="px-4 py-3 text-center font-bold text-blue-600">{player.points ?? player.sets_won ?? 0}</td>
+                                  <td className="px-4 py-3 text-center">
+                                    {player.played}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-green-600 font-semibold">
+                                    {player.sets_won ?? 0}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-red-600">
+                                    {player.sets_lost ?? 0}
+                                  </td>
+                                  <td className="px-4 py-3 text-center font-bold text-blue-600">
+                                    {player.points ?? player.sets_won ?? 0}
+                                  </td>
                                 </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        ) : (
-                          <p className="text-gray-500 text-center py-8">No teams added yet</p>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-gray-500 text-center py-8">
+                          No teams added yet
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === "fixtures" && (
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-bold">All Fixtures</h3>
+                        {players.length >= 2 && (
+                          <button
+                            onClick={generateFixtures}
+                            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                          >
+                            Generate Fixtures
+                          </button>
                         )}
                       </div>
-                    )}
 
-                    {activeTab === 'fixtures' && (
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-xl font-bold">All Fixtures</h3>
-                          {players.length >= 2 && (
-                            <button
-                              onClick={generateFixtures}
-                              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                      {fixtures.length > 0 ? (
+                        <div className="space-y-3">
+                          {fixtures.map((fixture) => (
+                            <div
+                              key={fixture.id}
+                              className="border rounded-lg p-4 hover:bg-gray-50"
                             >
-                              Generate Fixtures
-                            </button>
-                          )}
-                        </div>
-
-                        {fixtures.length > 0 ? (
-                          <div className="space-y-3">
-                            {fixtures.map(fixture => (
-                              <div key={fixture.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                                <div className="flex justify-between items-center">
-                                  <div className="flex-1">
-                                    <div className="font-semibold">
-                                      {fixture.player1_name} vs {fixture.player2_name}
-                                    </div>
-                                    {fixture.played && (
-                                      <div className="text-sm text-gray-600 mt-1">
-                                        {Array.isArray(fixture.set_scores) && fixture.set_scores.length > 0 ? (
-                                          <>
-                                            Result (sets): {fixture.player1_sets ?? '?'} - {fixture.player2_sets ?? '?'}
-                                            <span className="ml-2">
-                                             ({fixture.set_scores.map(s => `${s[0]}-${s[1]}`).join(', ')})
-                                            </span>
-                                          </>
-                                        ) : (
-                                          <>
-                                            Result: {fixture.player1_score} - {fixture.player2_score}
-                                          </>
-                                        )}
-                                        <span className="text-green-600 font-semibold ml-2">
-                                          (Winner: {fixture.winner_id === fixture.player1_id ? fixture.player1_name : fixture.player2_name})
-                                        </span>
-                                      </div>
-                                    )}
+                              <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                  <div className="font-semibold">
+                                    {fixture.player1_name} vs{" "}
+                                    {fixture.player2_name}
                                   </div>
-                                  {!fixture.played && (
-                                    <button
-                                      onClick={() => openScoreModal(fixture)}
-                                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                                    >
-                                      Record Result
-                                    </button>
+                                  {fixture.played && (
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      {Array.isArray(fixture.set_scores) &&
+                                      fixture.set_scores.length > 0 ? (
+                                        <>
+                                          Result (sets):{" "}
+                                          {fixture.player1_sets ?? "?"} -{" "}
+                                          {fixture.player2_sets ?? "?"}
+                                          <span className="ml-2">
+                                            (
+                                            {fixture.set_scores
+                                              .map((s) => `${s[0]}-${s[1]}`)
+                                              .join(", ")}
+                                            )
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          Result: {fixture.player1_score} -{" "}
+                                          {fixture.player2_score}
+                                        </>
+                                      )}
+                                      <span className="text-green-600 font-semibold ml-2">
+                                        (Winner:{" "}
+                                        {fixture.winner_id ===
+                                        fixture.player1_id
+                                          ? fixture.player1_name
+                                          : fixture.player2_name}
+                                        )
+                                      </span>
+                                    </div>
                                   )}
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 text-center py-8">No fixtures generated yet</p>
-                        )}
-                      </div>
-                    )}
-
-                    {activeTab === 'outstanding' && (
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <h3 className="text-xl font-bold mb-4">Outstanding Games</h3>
-
-                        {outstandingGames.length > 0 ? (
-                          <div className="space-y-3">
-                            {outstandingGames.map(fixture => (
-                              <div key={fixture.id} className="border border-orange-200 bg-orange-50 rounded-lg p-4">
-                                <div className="flex justify-between items-center">
-                                  <div className="flex-1">
-                                    <div className="font-semibold">
-                                      {fixture.player1_name} vs {fixture.player2_name}
-                                    </div>
-                                    <div className="text-sm text-orange-600 mt-1">
-                                      Awaiting result
-                                    </div>
-                                  </div>
+                                {!fixture.played && (
                                   <button
                                     onClick={() => openScoreModal(fixture)}
                                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                                   >
                                     Record Result
                                   </button>
-                                </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8">
-                            <p className="text-green-600 font-semibold text-lg">All games completed! 🎉</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-center py-8">
+                          No fixtures generated yet
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                {!selectedDivision && divisions.length > 0 && (
-                  <div className="bg-white rounded-lg shadow p-12 text-center">
-                    <p className="text-gray-600 text-lg">Select a division to get started</p>
-                  </div>
-                )}
+                  {activeTab === "outstanding" && (
+                    <div className="bg-white rounded-lg shadow p-6">
+                      <h3 className="text-xl font-bold mb-4">
+                        Outstanding Games
+                      </h3>
 
-                {divisions.length === 0 && (
-                  <div className="bg-white rounded-lg shadow p-12 text-center">
-                    <p className="text-gray-600 text-lg mb-4">No divisions created yet</p>
-                    <button
-                      onClick={addDivision}
-                      className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-                    >
-                      ➕ Create Your First Division
-                    </button>
-                  </div>
-                )}
-              </div>
+                      {outstandingGames.length > 0 ? (
+                        <div className="space-y-3">
+                          {outstandingGames.map((fixture) => (
+                            <div
+                              key={fixture.id}
+                              className="border border-orange-200 bg-orange-50 rounded-lg p-4"
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                  <div className="font-semibold">
+                                    {fixture.player1_name} vs{" "}
+                                    {fixture.player2_name}
+                                  </div>
+                                  <div className="text-sm text-orange-600 mt-1">
+                                    Awaiting result
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => openScoreModal(fixture)}
+                                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                                >
+                                  Record Result
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-green-600 font-semibold text-lg">
+                            All games completed! 🎉
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!selectedDivision && divisions.length > 0 && (
+                <div className="bg-white rounded-lg shadow p-12 text-center">
+                  <p className="text-gray-600 text-lg">
+                    Select a division to get started
+                  </p>
+                </div>
+              )}
+
+              {divisions.length === 0 && (
+                <div className="bg-white rounded-lg shadow p-12 text-center">
+                  <p className="text-gray-600 text-lg mb-4">
+                    No divisions created yet
+                  </p>
+                  <button
+                    onClick={addDivision}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                  >
+                    ➕ Create Your First Division
+                  </button>
+                </div>
+              )}
             </div>
-          );
-        };
+          </div>
+        );
+      };
 
-        ReactDOM.render(<PadelLeagueApp />, document.getElementById('root'));
+      ReactDOM.render(<PadelLeagueApp />, document.getElementById("root"));
     </script>
-</body>
+  </body>
 </html>
