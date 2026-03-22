@@ -431,58 +431,49 @@
                           </thead>
                           <tbody>
                           {sortedPlayers.map((player, idx) => {
-                            const pos = idx + 1;
-                            const divName = (division.name || "").toLowerCase();
+                          const pos = idx + 1;
+                          const divName = (division.name || "").toLowerCase();
 
-                            let rowStyle = {};
+                          const isPremierLeague = divName.includes("premier league");
+                          const isChampionishipOrLeagueOne =
+                            divName.includes("championship") || divName.includes("league one");
+                          const isLadiesDivisionOne =
+                            divName.includes("ladies") && divName.includes("division 1");
 
-                            if (divName.includes("premier league")) {
-                              if (pos === 1) {
-                                rowStyle = { backgroundColor: "#f0fdf4" }; // faint green
-                              } else if (pos >= 7 && pos <= 10) {
-                                rowStyle = { backgroundColor: "#fef2f2" }; // faint red
-                              }
-                            } else if (
-                              divName.includes("championship") ||
-                              divName.includes("league one")
-                            ) {
-                              if (pos === 1 || pos === 2) {
-                                rowStyle = { backgroundColor: "#f0fdf4" };
-                              } else if (pos >= 6 && pos <= 9) {
-                                rowStyle = { backgroundColor: "#fef2f2" };
-                              }
-                            } else if (
-                              divName.includes("ladies") &&
-                              divName.includes("division 1")
-                            ) {
-                              if (pos === 1) {
-                                rowStyle = { backgroundColor: "#f0fdf4" };
-                              } else if (pos >= 5 && pos <= 8) {
-                                rowStyle = { backgroundColor: "#fef2f2" };
-                              }
-                            }
+                          let bg = "";
+                          if (isPremierLeague) {
+                            if (pos === 1) bg = "#86efac";
+                            else if (pos >= 7 && pos <= 10) bg = "#fca5a5";
+                          } else if (isChampionishipOrLeagueOne) {
+                            if (pos === 1 || pos === 2) bg = "#86efac";
+                            else if (pos >= 6 && pos <= 9) bg = "#fca5a5";
+                          } else if (isLadiesDivisionOne) {
+                            if (pos === 1) bg = "#86efac";
+                            else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
+                          }
 
-                            return (
-                              <tr
-                                key={player.id}
-                                className="border-b hover:bg-gray-50"
-                                style={rowStyle}
-                              >
-                                <td className="px-4 py-3 font-bold">{pos}</td>
-                                <td className="px-4 py-3">{player.name}</td>
-                                <td className="px-4 py-3 text-center">{player.played}</td>
-                                <td className="px-4 py-3 text-center text-green-600 font-semibold">
-                                  {player.sets_won ?? 0}
-                                </td>
-                                <td className="px-4 py-3 text-center text-red-600">
-                                  {player.sets_lost ?? 0}
-                                </td>
-                                <td className="px-4 py-3 text-center font-bold text-blue-600">
-                                  {player.points ?? player.sets_won ?? 0}
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          return (
+                            <tr
+                              key={player.id}
+                              className="border-b"
+                              style={bg ? { backgroundColor: bg } : {}}
+                              title={`${division.name} | pos ${pos} | bg ${bg || "none"}`}
+                            >
+                              <td className="px-4 py-3 font-bold">{pos}</td>
+                              <td className="px-4 py-3">{player.name}</td>
+                              <td className="px-4 py-3 text-center">{player.played}</td>
+                              <td className="px-4 py-3 text-center text-green-600 font-semibold">
+                                {player.sets_won ?? player.won ?? 0}
+                              </td>
+                              <td className="px-4 py-3 text-center text-red-600">
+                                {player.sets_lost ?? player.lost ?? 0}
+                              </td>
+                              <td className="px-4 py-3 text-center font-bold text-blue-600">
+                                {player.points ?? player.sets_won ?? player.won ?? 0}
+                              </td>
+                            </tr>
+                          );
+                        })}
                           </tbody>
                         </table>
                       ) : (
