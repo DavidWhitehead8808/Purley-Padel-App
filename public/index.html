@@ -431,16 +431,38 @@
                           </thead>
                           <tbody>
                             {sortedPlayers.map((player, idx) => {
-                              const total = sortedPlayers.length;
-                              const isTop4 = idx < 4;
-                              const rowClass = isTop4 ? "bg-green-50" : "";
+                              const pos = idx + 1;
+                              const divName = division.name.toLowerCase();
+                              let rowClass = "";
+                              
+                              // Determine row styling based on division and position
+                              if (divName.includes("premiership")) {
+                                if (pos === 1) {
+                                  rowClass = "bg-green-50";
+                                } else if (pos >= 7 && pos <= 10) {
+                                  rowClass = "bg-red-50";
+                                }
+                              } else if (divName.includes("championship") || divName.includes("league 1")) {
+                                if (pos === 1 || pos === 2) {
+                                  rowClass = "bg-green-50";
+                                } else if (pos >= 6 && pos <= 9) {
+                                  rowClass = "bg-red-50";
+                                }
+                              } else if (divName.includes("ladies") && (divName.includes("div 1") || divName.includes("division 1"))) {
+                                if (pos === 1) {
+                                  rowClass = "bg-green-50";
+                                } else if (pos >= 5 && pos <= 8) {
+                                  rowClass = "bg-red-50";
+                                }
+                              }
+                              
                               return (
                                 <tr
                                   key={player.id}
                                   className={`border-b hover:bg-gray-50 ${rowClass}`}
                                 >
                                   <td className="px-4 py-3 font-bold">
-                                    {idx + 1}
+                                    {pos}
                                   </td>
                                   <td className="px-4 py-3">{player.name}</td>
                                   <td className="px-4 py-3 text-center">
