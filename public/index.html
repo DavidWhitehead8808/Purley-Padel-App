@@ -436,7 +436,7 @@
 
                           const isPremierLeague = divName.includes("premier league");
                           const isChampionishipOrLeagueOne =
-                            divName.includes("championship") || divName.includes("league one");
+                            divName.includes("championship") || divName.includes("league one") || divName.includes("league two");
                           const isLadiesDivisionOne =
                             divName.includes("ladies") && divName.includes("division 1");
                           const isLadiesDivisionTwo =
@@ -446,18 +446,18 @@
                           if (isPremierLeague) {
                             if (pos === 1) bg = "#86efac";
                             else if (pos >= 7 && pos <= 10) bg = "#fca5a5";
-                          } else if (isChampionishipOrLeagueOne) {
+                          } else if (isChampionishipOrLeagueOneorLeagueTwo) {
                             if (pos === 1 || pos === 2) bg = "#86efac";
                             else if (pos >= 6 && pos <= 9) bg = "#fca5a5";
                           } else if (isLadiesDivisionOne) {
                             if (pos === 1) bg = "#86efac";
                             else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
                           }
-                          else if (isLadiesDivisionTwo) {
+                            else if (isLadiesDivisionTwo) {
                             if (pos === 1) bg = "#86efac";
                             else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
                           }
-                          
+
                           return (
                             <tr
                               key={player.id}
