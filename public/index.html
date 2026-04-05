@@ -439,6 +439,8 @@
                             divName.includes("championship") || divName.includes("league one");
                           const isLadiesDivisionOne =
                             divName.includes("ladies") && divName.includes("division 1");
+                          const isLadiesDivisionTwo =
+                            divName.includes("ladies") && divName.includes("division 2");
 
                           let bg = "";
                           if (isPremierLeague) {
@@ -451,7 +453,11 @@
                             if (pos === 1) bg = "#86efac";
                             else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
                           }
-
+                          else if (isLadiesDivisionTwo) {
+                            if (pos === 1) bg = "#86efac";
+                            else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
+                          }
+                          
                           return (
                             <tr
                               key={player.id}
