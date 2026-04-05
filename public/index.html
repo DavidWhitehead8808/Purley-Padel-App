@@ -26,7 +26,6 @@
       const PadelLeagueApp = () => {
         const [divisions, setDivisions] = useState([]);
         const [selectedDivision, setSelectedDivision] = useState(null);
-        // NOTE: DB/API still calls these "players". In the UI we refer to them as "Teams".
         const [players, setPlayers] = useState([]);
         const [fixtures, setFixtures] = useState([]);
         const [activeTab, setActiveTab] = useState("table");
@@ -111,7 +110,7 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name }),
-              },
+              }
             );
             await res.json();
             loadDivisionData(selectedDivision);
@@ -129,7 +128,7 @@
               `${API_URL}/api/divisions/${selectedDivision}/generate-fixtures`,
               {
                 method: "POST",
-              },
+              }
             );
             loadDivisionData(selectedDivision);
             alert("Fixtures generated successfully!");
@@ -149,7 +148,6 @@
         };
 
         const setGridValue = (teamKey, idx, value) => {
-          // Only allow digits, empty, and max 1-2 chars.
           const cleaned = value.replace(/[^0-9]/g, "").slice(0, 2);
           setScoreGrid((prev) => {
             const next = { ...prev, [teamKey]: [...prev[teamKey]] };
@@ -162,27 +160,31 @@
           const fixture = scoreModal.fixture;
           if (!fixture) return;
 
-          // Build up to 3 sets. Skip empty set rows.
           const set_scores = [];
           for (let i = 0; i < 3; i++) {
             const a = scoreGrid.t1[i];
             const b = scoreGrid.t2[i];
+
             if (
               (a === "" || a === null || a === undefined) &&
               (b === "" || b === null || b === undefined)
             ) {
               continue;
             }
+
             const an = Number(a);
             const bn = Number(b);
+
             if (!Number.isInteger(an) || !Number.isInteger(bn)) {
               alert("Please enter valid numbers for each set.");
               return;
             }
+
             if (an === bn) {
               alert("A set cannot end in a tie.");
               return;
             }
+
             set_scores.push([an, bn]);
           }
 
@@ -197,6 +199,7 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ set_scores }),
             });
+
             closeScoreModal();
             loadDivisionData(selectedDivision);
           } catch (err) {
@@ -208,18 +211,61 @@
         const outstandingGames = fixtures.filter((f) => !f.played);
         const division = divisions.find((d) => d.id === selectedDivision);
 
-        // Defensive client-side ordering (backend should already do this).
         const sortedPlayers = [...players].sort((a, b) => {
           const ap = Number(a.points ?? a.sets_won ?? a.won ?? 0);
           const bp = Number(b.points ?? b.sets_won ?? b.won ?? 0);
           if (bp !== ap) return bp - ap;
 
-          const asd = Number((a.sets_won ?? 0) - (a.sets_lost ?? 0));
-          const bsd = Number((b.sets_won ?? 0) - (b.sets_lost ?? 0));
+          const asd = Number(
+            (a.sets_won ?? a.won ?? 0) - (a.sets_lost ?? a.lost ?? 0)
+          );
+          const bsd = Number(
+            (b.sets_won ?? b.won ?? 0) - (b.sets_lost ?? b.lost ?? 0)
+          );
           if (bsd !== asd) return bsd - asd;
 
           return String(a.name ?? "").localeCompare(String(b.name ?? ""));
         });
+
+        const getRowStyle = (divisionName, pos) => {
+          const divName = (divisionName || "").toLowerCase();
+
+          if (divName.includes("premier league")) {
+            if (pos === 1) return { backgroundColor: "#86efac" };
+            if (pos >= 7 && pos <= 10) return { backgroundColor: "#fca5a5" };
+            return {};
+          }
+
+          if (
+            divName.includes("championship") ||
+            divName.includes("league one") ||
+            divName.includes("league two")
+          ) {
+            if (pos === 1 || pos === 2) return { backgroundColor: "#86efac" };
+            if (pos >= 6 && pos <= 9) return { backgroundColor: "#fca5a5" };
+            return {};
+          }
+
+          if (
+            divName.includes("ladies") &&
+            divName.includes("division 1")
+          ) {
+            if (pos === 1) return { backgroundColor: "#86efac" };
+            if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
+            return {};
+          }
+
+          if (
+            divName.includes("ladies") &&
+            divName.includes("division 2")
+          ) {
+            if (pos === 1) return { backgroundColor: "#86efac" };
+            if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
+            return {};
+          }
+
+          return {};
+        };
 
         return (
           <div className="min-h-screen bg-gray-50">
@@ -237,7 +283,6 @@
               <p className="text-pink-100 mt-1">Leagues - 2026</p>
             </div>
 
-            {/* Score upload modal */}
             {scoreModal.open && scoreModal.fixture && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                 <div className="w-full max-w-lg rounded-lg bg-white shadow-xl">
@@ -430,56 +475,37 @@
                             </tr>
                           </thead>
                           <tbody>
-                          {sortedPlayers.map((player, idx) => {
-                          const pos = idx + 1;
-                          const divName = (division.name || "").toLowerCase();
+                            {sortedPlayers.map((player, idx) => {
+                              const pos = idx + 1;
+                              const rowStyle = getRowStyle(division.name, pos);
 
-                          const isPremierLeague = divName.includes("premier league");
-                          const isChampionishipOrLeagueOne =
-                            divName.includes("championship") || divName.includes("league one") || divName.includes("league two");
-                          const isLadiesDivisionOne =
-                            divName.includes("ladies") && divName.includes("division 1");
-                          const isLadiesDivisionTwo =
-                            divName.includes("ladies") && divName.includes("division 2");
-
-                          let bg = "";
-                          if (isPremierLeague) {
-                            if (pos === 1) bg = "#86efac";
-                            else if (pos >= 7 && pos <= 10) bg = "#fca5a5";
-                          } else if (isChampionishipOrLeagueOneorLeagueTwo) {
-                            if (pos === 1 || pos === 2) bg = "#86efac";
-                            else if (pos >= 6 && pos <= 9) bg = "#fca5a5";
-                          } else if (isLadiesDivisionOne) {
-                            if (pos === 1) bg = "#86efac";
-                            else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
-                          }
-                            else if (isLadiesDivisionTwo) {
-                            if (pos === 1) bg = "#86efac";
-                            else if (pos >= 5 && pos <= 8) bg = "#fca5a5";
-                          }
-
-                          return (
-                            <tr
-                              key={player.id}
-                              className="border-b"
-                              style={bg ? { backgroundColor: bg } : {}}
-                              title={`${division.name} | pos ${pos} | bg ${bg || "none"}`}
-                            >
-                              <td className="px-4 py-3 font-bold">{pos}</td>
-                              <td className="px-4 py-3">{player.name}</td>
-                              <td className="px-4 py-3 text-center">{player.played}</td>
-                              <td className="px-4 py-3 text-center text-green-600 font-semibold">
-                                {player.sets_won ?? player.won ?? 0}
-                              </td>
-                              <td className="px-4 py-3 text-center text-red-600">
-                                {player.sets_lost ?? player.lost ?? 0}
-                              </td>
-                              <td className="px-4 py-3 text-center font-bold text-blue-600">
-                                {player.points ?? player.sets_won ?? player.won ?? 0}
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              return (
+                                <tr
+                                  key={player.id}
+                                  className="border-b"
+                                  style={rowStyle}
+                                  title={`${division.name} | pos ${pos}`}
+                                >
+                                  <td className="px-4 py-3 font-bold">{pos}</td>
+                                  <td className="px-4 py-3">{player.name}</td>
+                                  <td className="px-4 py-3 text-center">
+                                    {player.played}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-green-600 font-semibold">
+                                    {player.sets_won ?? player.won ?? 0}
+                                  </td>
+                                  <td className="px-4 py-3 text-center text-red-600">
+                                    {player.sets_lost ?? player.lost ?? 0}
+                                  </td>
+                                  <td className="px-4 py-3 text-center font-bold text-blue-600">
+                                    {player.points ??
+                                      player.sets_won ??
+                                      player.won ??
+                                      0}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       ) : (
@@ -517,6 +543,7 @@
                                     {fixture.player1_name} vs{" "}
                                     {fixture.player2_name}
                                   </div>
+
                                   {fixture.played && (
                                     <div className="text-sm text-gray-600 mt-1">
                                       {Array.isArray(fixture.set_scores) &&
@@ -539,6 +566,7 @@
                                           {fixture.player2_score}
                                         </>
                                       )}
+
                                       <span className="text-green-600 font-semibold ml-2">
                                         (Winner:{" "}
                                         {fixture.winner_id ===
@@ -550,6 +578,7 @@
                                     </div>
                                   )}
                                 </div>
+
                                 {!fixture.played && (
                                   <button
                                     onClick={() => openScoreModal(fixture)}
