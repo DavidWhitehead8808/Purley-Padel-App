@@ -227,45 +227,48 @@
           return String(a.name ?? "").localeCompare(String(b.name ?? ""));
         });
 
-        const getRowStyle = (divisionName, pos) => {
-          const divName = (divisionName || "").toLowerCase();
+          const getRowStyle = (divisionName, pos) => {
+            const divName = (divisionName || "").toLowerCase();
 
-          if (divName.includes("premier league")) {
-            if (pos === 1) return { backgroundColor: "#86efac" };
-            if (pos >= 7 && pos <= 10) return { backgroundColor: "#fca5a5" };
+            if (divName.includes("premier league")) {
+              if (pos === 1) return { backgroundColor: "#86efac" };
+              if (pos >= 7 && pos <= 10) return { backgroundColor: "#fca5a5" };
+              return {};
+            }
+
+            if (
+              divName.includes("championship") ||
+              divName.includes("league one")
+            ) {
+              if (pos === 1 || pos === 2) return { backgroundColor: "#86efac" };
+              if (pos >= 6 && pos <= 9) return { backgroundColor: "#fca5a5" };
+              return {};
+            }
+
+            if (divName.includes("league two")) {
+              if (pos >= 1 && pos <= 4) return { backgroundColor: "#86efac" };
+              return {};
+            }
+
+            if (
+              divName.includes("ladies") &&
+              divName.includes("division 1")
+            ) {
+              if (pos === 1) return { backgroundColor: "#86efac" };
+              if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
+              return {};
+            }
+
+            if (
+              divName.includes("ladies") &&
+              divName.includes("division 2")
+            ) {
+              if (pos >= 1 && pos <= 4) return { backgroundColor: "#86efac" };
+              return {};
+            }
+
             return {};
-          }
-
-          if (
-            divName.includes("championship") ||
-            divName.includes("league one") ||
-            divName.includes("league two")
-          ) {
-            if (pos === 1 || pos === 2) return { backgroundColor: "#86efac" };
-            if (pos >= 6 && pos <= 9) return { backgroundColor: "#fca5a5" };
-            return {};
-          }
-
-          if (
-            divName.includes("ladies") &&
-            divName.includes("division 1")
-          ) {
-            if (pos === 1) return { backgroundColor: "#86efac" };
-            if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
-            return {};
-          }
-
-          if (
-            divName.includes("ladies") &&
-            divName.includes("division 2")
-          ) {
-            if (pos === 1) return { backgroundColor: "#86efac" };
-            if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
-            return {};
-          }
-
-          return {};
-        };
+          };
 
         return (
           <div className="min-h-screen bg-gray-50">
