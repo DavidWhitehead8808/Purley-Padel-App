@@ -208,6 +208,45 @@
           }
         };
 
+        const renameTeam = async (id, currentName) => {
+          const newName = prompt("Rename team:", currentName);
+          if (!newName || newName.trim() === currentName) return;
+          try {
+            await fetch(`${API_URL}/api/players/${id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: newName.trim() }),
+            });
+            loadDivisionData(selectedDivision);
+          } catch (err) {
+            console.error("Error renaming team:", err);
+            alert("Failed to rename team");
+          }
+        };
+
+        const deleteTeam = async (id, name) => {
+          if (!confirm(`Delete "${name}"? This will also remove all their fixtures.`)) return;
+          try {
+            await fetch(`${API_URL}/api/players/${id}`, { method: "DELETE" });
+            loadDivisionData(selectedDivision);
+          } catch (err) {
+            console.error("Error deleting team:", err);
+            alert("Failed to delete team");
+          }
+        };
+
+        const resetDivision = async () => {
+          if (!confirm("Reset this division? This clears all fixtures and resets every team's stats to zero. Team names are kept.")) return;
+          try {
+            await fetch(`${API_URL}/api/divisions/${selectedDivision}/reset`, { method: "POST" });
+            loadDivisionData(selectedDivision);
+            alert("Division reset. All stats and fixtures cleared.");
+          } catch (err) {
+            console.error("Error resetting division:", err);
+            alert("Failed to reset division");
+          }
+        };
+
         const outstandingGames = fixtures.filter((f) => !f.played);
         const division = divisions.find((d) => d.id === selectedDivision);
 
@@ -449,12 +488,20 @@
                     <div className="bg-white rounded-lg shadow p-6">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-bold">League Table</h3>
-                        <button
-                          onClick={addTeam}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                        >
-                          Add Team
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={resetDivision}
+                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                          >
+                            Reset Season
+                          </button>
+                          <button
+                            onClick={addTeam}
+                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                          >
+                            Add Team
+                          </button>
+                        </div>
                       </div>
 
                       {players.length > 0 ? (
@@ -474,6 +521,9 @@
                               </th>
                               <th className="px-4 py-3 text-center">
                                 Total Points
+                              </th>
+                              <th className="px-4 py-3 text-center">
+                                Actions
                               </th>
                             </tr>
                           </thead>
@@ -505,6 +555,24 @@
                                       player.sets_won ??
                                       player.won ??
                                       0}
+                                  </td>
+                                  <td className="px-4 py-3 text-center">
+                                    <div className="flex justify-center gap-2">
+                                      <button
+                                        onClick={() => renameTeam(player.id, player.name)}
+                                        className="text-sm px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                        title="Rename team"
+                                      >
+                                        ✏️
+                                      </button>
+                                      <button
+                                        onClick={() => deleteTeam(player.id, player.name)}
+                                        className="text-sm px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-700"
+                                        title="Delete team"
+                                      >
+                                        🗑️
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               );

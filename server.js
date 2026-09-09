@@ -125,6 +125,59 @@ app.get('/api/divisions/:id/fixtures', async (req, res) => {
   }
 });
 
+app.put('/api/players/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  try {
+    const result = await pool.query(
+      'UPDATE players SET name = $1 WHERE id = $2 RETURNING *',
+      [name.trim(), id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/players/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM players WHERE id = $1', [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/divisions/:id/reset', async (req, res) => {
+  const { id } = req.params;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM fixtures WHERE division_id = $1', [id]);
+    await client.query(
+      'UPDATE players SET played = 0, won = 0, lost = 0, points = 0 WHERE division_id = $1',
+      [id]
+    );
+    await client.query('COMMIT');
+    res.json({ success: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  } finally {
+    client.release();
+  }
+});
+
 app.post('/api/divisions/:id/generate-fixtures', async (req, res) => {
   const { id } = req.params;
   const client = await pool.connect();
