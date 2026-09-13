@@ -275,43 +275,49 @@
           return String(a.name ?? "").localeCompare(String(b.name ?? ""));
         });
 
-          const getRowStyle = (divisionName, pos) => {
+          const getRowStyle = (divisionName, pos, total) => {
             const divName = (divisionName || "").toLowerCase();
+            const GREEN = { backgroundColor: "#86efac" };
+            const RED   = { backgroundColor: "#fca5a5" };
+            const isBottom2 = pos >= total - 1;
 
-            if (divName.includes("premier league")) {
-              if (pos === 1) return { backgroundColor: "#86efac" };
-              if (pos >= 7 && pos <= 10) return { backgroundColor: "#fca5a5" };
+            // Premier League — 1st green, bottom 2 red
+            if (divName.includes("premier")) {
+              if (pos === 1) return GREEN;
+              if (isBottom2) return RED;
               return {};
             }
 
+            // Championship, League 1, League 2 — top 2 green, bottom 2 red
             if (
               divName.includes("championship") ||
-              divName.includes("league one")
+              divName.includes("league 1") ||
+              divName.includes("league one") ||
+              divName.includes("league 2") ||
+              divName.includes("league two")
             ) {
-              if (pos === 1 || pos === 2) return { backgroundColor: "#86efac" };
-              if (pos >= 6 && pos <= 9) return { backgroundColor: "#fca5a5" };
+              if (pos <= 2) return GREEN;
+              if (isBottom2) return RED;
               return {};
             }
 
-            if (divName.includes("league two")) {
-              if (pos >= 1 && pos <= 4) return { backgroundColor: "#86efac" };
-              return {};
-            }
-
+            // Women's / Ladies Division 1 — 1st green, bottom 2 red
             if (
-              divName.includes("ladies") &&
-              divName.includes("division 1")
+              (divName.includes("ladies") || divName.includes("women")) &&
+              (divName.includes("1") || divName.includes("one"))
             ) {
-              if (pos === 1) return { backgroundColor: "#86efac" };
-              if (pos >= 5 && pos <= 8) return { backgroundColor: "#fca5a5" };
+              if (pos === 1) return GREEN;
+              if (isBottom2) return RED;
               return {};
             }
 
+            // Women's / Ladies Division 2 — top 2 green, bottom 2 red
             if (
-              divName.includes("ladies") &&
-              divName.includes("division 2")
+              (divName.includes("ladies") || divName.includes("women")) &&
+              (divName.includes("2") || divName.includes("two"))
             ) {
-              if (pos >= 1 && pos <= 4) return { backgroundColor: "#86efac" };
+              if (pos <= 2) return GREEN;
+              if (isBottom2) return RED;
               return {};
             }
 
@@ -549,7 +555,7 @@
                           <tbody>
                             {sortedPlayers.map((player, idx) => {
                               const pos = idx + 1;
-                              const rowStyle = getRowStyle(division.name, pos);
+                              const rowStyle = getRowStyle(division.name, pos, sortedPlayers.length);
 
                               return (
                                 <tr
