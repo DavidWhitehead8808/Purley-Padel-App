@@ -27,6 +27,8 @@ services:
     environment:
       DATABASE_URL: postgres://padel_admin:${DB_PASSWORD}@db:5432/padel_league
       NODE_ENV: production
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_SECRET: ${ADMIN_SECRET}
     depends_on:
       db:
         condition: service_healthy
