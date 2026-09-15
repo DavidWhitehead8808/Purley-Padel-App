@@ -112,6 +112,25 @@ app.get('/api/auth/me', (req, res) => {
   res.json({ username: req.session.username });
 });
 
+app.post('/api/auth/signup', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
+  if (username.trim().length < 2) return res.status(400).json({ error: 'Username must be at least 2 characters' });
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    await pool.query(
+      'INSERT INTO users (username, password_hash) VALUES ($1, $2)',
+      [username.trim().toLowerCase(), hash]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'That username is already taken' });
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 app.post('/api/auth/change-password', async (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
   const { currentPassword, newPassword } = req.body;
