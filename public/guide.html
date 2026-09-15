@@ -8,18 +8,16 @@
   </head>
   <body class="min-h-screen bg-gray-50">
 
-    <!-- Header (matches the main app) -->
     <div class="bg-[#C25C89] text-white p-6 shadow-lg">
-      <div class="flex items-center gap-4">
-        <img
-          src="PSC LOGO HIGH QUALITY (1).png"
-          alt="Purley Sports Club logo"
-          class="h-12 w-auto"
-        />
-        <div>
-          <h1 class="text-3xl font-bold">Purley Sports Club – Padel League</h1>
-          <p class="text-pink-100 mt-1">User Guide</p>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <img src="PSC LOGO HIGH QUALITY (1).png" alt="Purley Sports Club logo" class="h-12 w-auto" />
+          <div>
+            <h1 class="text-3xl font-bold">Purley Sports Club – Padel League</h1>
+            <p class="text-pink-100 mt-1">User Guide</p>
+          </div>
         </div>
+        <a href="/" class="bg-white text-[#C25C89] px-4 py-2 rounded-lg font-medium hover:bg-pink-50 text-sm flex-shrink-0">Go to the App</a>
       </div>
     </div>
 
@@ -29,24 +27,53 @@
       <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome to the Padel League App</h2>
         <p class="text-gray-600 leading-relaxed">
-          This guide explains how to use the Purley Sports Club Padel League app — from checking the table to recording match results. Everything runs in your browser, no app download needed.
+          This guide explains how to use the Purley Sports Club Padel League app — from signing in and checking the table to recording match results. Everything runs in your browser, no app download needed.
         </p>
-        <a
-          href="/"
-          class="inline-block mt-4 bg-[#C25C89] text-white px-5 py-2 rounded-lg hover:bg-[#b04d79] font-medium"
-        >
-          Go to the App
-        </a>
       </div>
 
-      <!-- Section 1: Divisions -->
+      <!-- Section 1: Signing in -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
           <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+          <h2 class="text-xl font-bold text-gray-800">🔐 Signing In</h2>
+        </div>
+        <p class="text-gray-600 leading-relaxed mb-4">
+          The app requires an account. Go to <strong>app.davepadel.com</strong> and you'll land on the sign-in page.
+        </p>
+        <div class="grid sm:grid-cols-2 gap-4 mb-4">
+          <div class="border rounded-lg p-4">
+            <h3 class="font-semibold text-gray-800 mb-1">Already have an account?</h3>
+            <p class="text-gray-600 text-sm">Enter your username and password on the <strong>Sign In</strong> tab and tap Sign In.</p>
+          </div>
+          <div class="border rounded-lg p-4">
+            <h3 class="font-semibold text-gray-800 mb-1">New to the app?</h3>
+            <p class="text-gray-600 text-sm">Tap <strong>Create Account</strong>, choose a username and password (at least 6 characters), and you're in.</p>
+          </div>
+        </div>
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 space-y-2">
+          <div class="flex items-start gap-2 text-sm text-gray-600">
+            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
+            <p>Your session stays active for 7 days — you won't need to sign in every visit.</p>
+          </div>
+          <div class="flex items-start gap-2 text-sm text-gray-600">
+            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
+            <p>Forgotten your password? Contact the league administrator — they can reset it from the admin panel.</p>
+          </div>
+          <div class="flex items-start gap-2 text-sm text-gray-600">
+            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
+            <p>To change your password once logged in, use the <strong>Change Password</strong> button in the top-right of the app.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Divisions -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
           <h2 class="text-xl font-bold text-gray-800">Choosing Your Division</h2>
         </div>
         <p class="text-gray-600 leading-relaxed mb-4">
-          When you open the app you'll see all the available divisions across the top. Tap the one you want to view.
+          Once signed in you'll see all the available divisions across the top. Tap the one you want to view.
         </p>
         <div class="bg-gray-50 border rounded-lg p-4 flex flex-wrap gap-2">
           <span class="px-4 py-2 rounded-lg font-medium bg-blue-600 text-white">Premier League</span>
@@ -56,17 +83,16 @@
         <p class="text-gray-500 text-sm mt-3">The selected division is highlighted in blue. Everything below — the table, fixtures and outstanding games — belongs to that division.</p>
       </div>
 
-      <!-- Section 2: League Table -->
+      <!-- Section 3: League Table -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">3</span>
           <h2 class="text-xl font-bold text-gray-800">📊 The League Table</h2>
         </div>
         <p class="text-gray-600 leading-relaxed mb-4">
           The <strong>Table</strong> tab shows the current standings, ordered by Total Points (highest first). If teams are level on points, the team with the better set difference is ranked higher.
         </p>
 
-        <!-- Mock table -->
         <div class="overflow-x-auto mb-4">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b-2">
@@ -81,43 +107,38 @@
             </thead>
             <tbody>
               <tr class="border-b" style="background-color:#86efac;">
-                <td class="px-3 py-2 font-bold">1</td>
-                <td class="px-3 py-2">Team Alpha</td>
-                <td class="px-3 py-2 text-center">4</td>
-                <td class="px-3 py-2 text-center text-green-700 font-semibold">8</td>
-                <td class="px-3 py-2 text-center text-red-600">2</td>
-                <td class="px-3 py-2 text-center font-bold text-blue-600">8</td>
+                <td class="px-3 py-2 font-bold">1</td><td class="px-3 py-2">Team Alpha</td>
+                <td class="px-3 py-2 text-center">4</td><td class="px-3 py-2 text-center text-green-700 font-semibold">8</td>
+                <td class="px-3 py-2 text-center text-red-600">2</td><td class="px-3 py-2 text-center font-bold text-blue-600">8</td>
               </tr>
               <tr class="border-b" style="background-color:#86efac;">
-                <td class="px-3 py-2 font-bold">2</td>
-                <td class="px-3 py-2">Team Beta</td>
-                <td class="px-3 py-2 text-center">4</td>
-                <td class="px-3 py-2 text-center text-green-700 font-semibold">7</td>
-                <td class="px-3 py-2 text-center text-red-600">3</td>
-                <td class="px-3 py-2 text-center font-bold text-blue-600">7</td>
+                <td class="px-3 py-2 font-bold">2</td><td class="px-3 py-2">Team Beta</td>
+                <td class="px-3 py-2 text-center">4</td><td class="px-3 py-2 text-center text-green-700 font-semibold">7</td>
+                <td class="px-3 py-2 text-center text-red-600">3</td><td class="px-3 py-2 text-center font-bold text-blue-600">7</td>
               </tr>
               <tr class="border-b">
-                <td class="px-3 py-2 font-bold">3</td>
-                <td class="px-3 py-2">Team Gamma</td>
-                <td class="px-3 py-2 text-center">4</td>
-                <td class="px-3 py-2 text-center text-green-700 font-semibold">5</td>
-                <td class="px-3 py-2 text-center text-red-600">5</td>
-                <td class="px-3 py-2 text-center font-bold text-blue-600">5</td>
+                <td class="px-3 py-2 font-bold">3</td><td class="px-3 py-2">Team Gamma</td>
+                <td class="px-3 py-2 text-center">4</td><td class="px-3 py-2 text-center text-green-700 font-semibold">5</td>
+                <td class="px-3 py-2 text-center text-red-600">5</td><td class="px-3 py-2 text-center font-bold text-blue-600">5</td>
+              </tr>
+              <tr class="border-b" style="background-color:#fca5a5;">
+                <td class="px-3 py-2 font-bold">4</td><td class="px-3 py-2">Team Delta</td>
+                <td class="px-3 py-2 text-center">4</td><td class="px-3 py-2 text-center text-green-700 font-semibold">2</td>
+                <td class="px-3 py-2 text-center text-red-600">8</td><td class="px-3 py-2 text-center font-bold text-blue-600">2</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Colour key -->
         <h3 class="font-semibold text-gray-700 mb-2">Row colours explained</h3>
-        <div class="space-y-2">
+        <div class="space-y-2 mb-4">
           <div class="flex items-center gap-3">
             <div class="w-6 h-6 rounded flex-shrink-0" style="background-color:#86efac;"></div>
             <p class="text-gray-600 text-sm"><strong>Green</strong> — top of the table (promotion / league leaders)</p>
           </div>
           <div class="flex items-center gap-3">
             <div class="w-6 h-6 rounded flex-shrink-0" style="background-color:#fca5a5;"></div>
-            <p class="text-gray-600 text-sm"><strong>Red</strong> — bottom of the table (relegation zone)</p>
+            <p class="text-gray-600 text-sm"><strong>Red</strong> — bottom of the table (danger zone)</p>
           </div>
           <div class="flex items-center gap-3">
             <div class="w-6 h-6 rounded flex-shrink-0 bg-white border"></div>
@@ -125,112 +146,89 @@
           </div>
         </div>
 
-        <!-- Scoring explained -->
-        <div class="mt-4 bg-pink-50 border border-pink-200 rounded-lg p-4">
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
           <h3 class="font-semibold text-[#C25C89] mb-1">How points are scored</h3>
           <p class="text-gray-600 text-sm leading-relaxed">
-            Each match is played over up to 3 sets. <strong>Each set won earns 1 point</strong> for that team — so a team winning 2 sets to 1 gets 2 points and the losing team gets 1. Points accumulate across all matches to build the league table.
+            Each match is played over up to 3 sets. <strong>Each set won earns 1 point</strong> — so a team winning 2 sets to 1 earns 2 points and the losing team earns 1. Points accumulate across all matches to build the table.
           </p>
         </div>
       </div>
 
-      <!-- Section 3: Fixtures -->
+      <!-- Section 4: Fixtures -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">3</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">4</span>
           <h2 class="text-xl font-bold text-gray-800">📅 Fixtures</h2>
         </div>
         <p class="text-gray-600 leading-relaxed mb-4">
-          The <strong>Fixtures</strong> tab lists every match in the division. Completed matches show the set-by-set result and the winner. Unplayed matches show a <strong>Record Result</strong> button.
+          The <strong>Fixtures</strong> tab lists every match in the division. Completed matches show the set-by-set result and winner. Unplayed matches show a <strong>Record Result</strong> button.
         </p>
 
-        <!-- Played fixture example -->
         <div class="border rounded-lg p-4 mb-3">
           <div class="flex justify-between items-center">
             <div>
               <div class="font-semibold">Team Alpha vs Team Beta</div>
-              <div class="text-sm text-gray-600 mt-1">
-                Result (sets): 2 – 1 &nbsp;(6–3, 4–6, 6–4)
+              <div class="text-sm text-gray-600 mt-1">Result (sets): 2 – 1 &nbsp;(6–3, 4–6, 6–4)
                 <span class="text-green-600 font-semibold ml-2">(Winner: Team Alpha)</span>
               </div>
             </div>
             <button class="bg-gray-500 text-white px-4 py-2 rounded-lg text-sm">Edit Score</button>
           </div>
         </div>
-
-        <!-- Unplayed fixture example -->
         <div class="border rounded-lg p-4 mb-4">
           <div class="flex justify-between items-center">
-            <div>
-              <div class="font-semibold">Team Gamma vs Team Delta</div>
-            </div>
+            <div><div class="font-semibold">Team Gamma vs Team Delta</div></div>
             <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Record Result</button>
           </div>
         </div>
-
-        <p class="text-gray-500 text-sm">Made a mistake? Use the grey <strong>Edit Score</strong> button on any completed fixture to correct it. The table updates automatically.</p>
+        <p class="text-gray-500 text-sm">Made a mistake? Use the grey <strong>Edit Score</strong> button on any completed fixture to correct it — the table updates automatically.</p>
       </div>
 
-      <!-- Section 4: Recording a result -->
+      <!-- Section 5: Entering a score -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">4</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">5</span>
           <h2 class="text-xl font-bold text-gray-800">Entering a Score</h2>
         </div>
         <p class="text-gray-600 leading-relaxed mb-4">
-          When you tap <strong>Record Result</strong> (or <strong>Edit Score</strong>), a form opens. Enter the number of games each team won in each set.
+          When you tap <strong>Record Result</strong> or <strong>Edit Score</strong>, a form opens. Enter the number of games each team won in each set.
         </p>
 
-        <!-- Score entry example -->
         <div class="border rounded-lg p-4 mb-4 max-w-sm">
           <div class="grid grid-cols-4 gap-2 items-center text-sm font-semibold text-gray-700 mb-2">
             <div></div>
-            <div class="text-center">Set 1</div>
-            <div class="text-center">Set 2</div>
-            <div class="text-center">Set 3</div>
+            <div class="text-center">Set 1</div><div class="text-center">Set 2</div><div class="text-center">Set 3</div>
           </div>
           <div class="grid grid-cols-4 gap-2 items-center mb-2">
             <div class="text-sm font-semibold">Team Alpha</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">6</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">4</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">6</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">6</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">4</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">6</div>
           </div>
           <div class="grid grid-cols-4 gap-2 items-center">
             <div class="text-sm font-semibold">Team Beta</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">3</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">6</div>
-            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50 text-gray-700">4</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">3</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">6</div>
+            <div class="border rounded-lg px-3 py-2 text-center bg-gray-50">4</div>
           </div>
         </div>
 
         <div class="space-y-2 text-sm text-gray-600">
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">✓</span>
-            <p>Enter the games won by each team for Set 1 and Set 2.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">✓</span>
-            <p>If a third set was played, fill in Set 3. Leave it blank if only 2 sets were played.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">✓</span>
-            <p>Each set must have a winner — a drawn set (e.g. 6–6) will be rejected.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">✓</span>
-            <p>Tap <strong>Save Score</strong> when done. The table updates immediately.</p>
-          </div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">✓</span><p>Enter the games won by each team for Set 1 and Set 2.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">✓</span><p>If a third set was played, fill in Set 3. Leave it blank if only 2 sets were played.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">✓</span><p>Each set must have a winner — a drawn set (e.g. 6–6) will be rejected.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">✓</span><p>Tap <strong>Save Score</strong> when done. The table updates immediately.</p></div>
         </div>
       </div>
 
-      <!-- Section 5: Outstanding -->
+      <!-- Section 6: Outstanding -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">5</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">6</span>
           <h2 class="text-xl font-bold text-gray-800">⏳ Outstanding Games</h2>
         </div>
         <p class="text-gray-600 leading-relaxed">
-          The <strong>Outstanding</strong> tab shows only the matches that haven't been played yet. The number in brackets updates as results come in. Use this tab as a quick checklist to see what still needs to be recorded.
+          The <strong>Outstanding</strong> tab shows only the matches that haven't been played yet. The number in brackets updates as results come in. Use it as a quick checklist of what still needs recording.
         </p>
         <div class="mt-4 border border-orange-200 bg-orange-50 rounded-lg p-4">
           <div class="flex justify-between items-center">
@@ -243,76 +241,88 @@
         </div>
       </div>
 
-      <!-- Section 6: Admin -->
+      <!-- Section 7: Managing teams -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">6</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">7</span>
           <h2 class="text-xl font-bold text-gray-800">Managing Teams</h2>
         </div>
         <p class="text-gray-600 leading-relaxed mb-4">
-          These controls are in the <strong>Table</strong> tab and are used by the league administrator.
+          These controls are in the <strong>Table</strong> tab and are for the league administrator.
         </p>
-
         <div class="space-y-4">
           <div class="border rounded-lg p-4">
             <div class="flex items-center gap-2 mb-1">
               <span class="bg-green-600 text-white text-sm px-3 py-1 rounded-lg font-medium">Add Team</span>
             </div>
-            <p class="text-gray-600 text-sm">Adds a new team to the selected division. Enter the team name when prompted.</p>
+            <p class="text-gray-600 text-sm">Adds a new team to the selected division.</p>
           </div>
-
           <div class="border rounded-lg p-4">
             <div class="flex items-center gap-2 mb-1">
               <span class="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded font-medium">✏️</span>
-              <span class="text-sm font-medium text-gray-700">Rename button (on each row)</span>
+              <span class="text-sm font-medium text-gray-700">Rename (on each row)</span>
             </div>
-            <p class="text-gray-600 text-sm">Corrects a team name without affecting their results or stats.</p>
+            <p class="text-gray-600 text-sm">Corrects a team name without touching their results or stats.</p>
           </div>
-
           <div class="border rounded-lg p-4">
             <div class="flex items-center gap-2 mb-1">
               <span class="bg-red-100 text-red-700 text-sm px-2 py-1 rounded font-medium">🗑️</span>
-              <span class="text-sm font-medium text-gray-700">Delete button (on each row)</span>
+              <span class="text-sm font-medium text-gray-700">Delete (on each row)</span>
             </div>
-            <p class="text-gray-600 text-sm">Removes a team and all their fixtures. You'll be asked to confirm before anything is deleted.</p>
+            <p class="text-gray-600 text-sm">Removes a team and all their fixtures. You'll be asked to confirm first.</p>
           </div>
-
           <div class="border border-red-200 rounded-lg p-4">
             <div class="flex items-center gap-2 mb-1">
               <span class="bg-red-600 text-white text-sm px-3 py-1 rounded-lg font-medium">Reset Season</span>
             </div>
-            <p class="text-gray-600 text-sm">Clears all fixtures and resets every team's stats to zero. <strong>Team names are kept</strong>, so you don't need to re-enter them for the new season. You'll be asked to confirm before anything is cleared.</p>
+            <p class="text-gray-600 text-sm">Clears all fixtures and resets every team's stats to zero. <strong>Team names are kept</strong> so you don't need to re-enter them for a new season.</p>
           </div>
         </div>
       </div>
 
-      <!-- Section 7: Quick Tips -->
+      <!-- Section 8: Your account -->
       <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center gap-3 mb-4">
-          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">7</span>
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">8</span>
+          <h2 class="text-xl font-bold text-gray-800">Your Account</h2>
+        </div>
+        <p class="text-gray-600 leading-relaxed mb-4">
+          Your username is shown in the top-right of the app. Two buttons sit alongside it:
+        </p>
+        <div class="space-y-4">
+          <div class="border rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="bg-pink-700 text-white text-sm px-3 py-1 rounded-lg font-medium">Change Password</span>
+            </div>
+            <p class="text-gray-600 text-sm">Enter your current password, then your new one twice. Takes effect immediately.</p>
+          </div>
+          <div class="border rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="bg-white border text-[#C25C89] text-sm px-3 py-1 rounded-lg font-medium">Sign Out</span>
+            </div>
+            <p class="text-gray-600 text-sm">Ends your session. You'll be taken back to the sign-in page.</p>
+          </div>
+        </div>
+        <div class="mt-4 bg-pink-50 border border-pink-200 rounded-lg p-4">
+          <p class="text-gray-600 text-sm"><strong>Forgotten your password?</strong> You won't be able to log in to change it yourself. Contact the league administrator — they can reset it for you from the admin panel at <strong>app.davepadel.com/admin.html</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Section 9: Quick Tips -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="bg-[#C25C89] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0">9</span>
           <h2 class="text-xl font-bold text-gray-800">Quick Tips</h2>
         </div>
         <div class="space-y-3 text-sm text-gray-600">
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
-            <p>The table updates instantly every time a score is saved — no need to refresh the page.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
-            <p>Fixtures are generated automatically in a round-robin format — every team plays every other team once.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
-            <p>If scores were entered incorrectly, use <strong>Edit Score</strong> on the fixture. The league table is corrected automatically.</p>
-          </div>
-          <div class="flex items-start gap-2">
-            <span class="text-[#C25C89] font-bold flex-shrink-0">→</span>
-            <p>The app works on mobile — open it in your phone's browser at <strong>app.davepadel.com</strong>.</p>
-          </div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">→</span><p>The table updates instantly every time a score is saved — no need to refresh.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">→</span><p>Fixtures are generated in a round-robin format — every team plays every other team once.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">→</span><p>If a score was entered incorrectly, use <strong>Edit Score</strong> on the fixture — the table corrects itself automatically.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">→</span><p>The app works on mobile — open it in your phone's browser at <strong>app.davepadel.com</strong>.</p></div>
+          <div class="flex items-start gap-2"><span class="text-[#C25C89] font-bold flex-shrink-0">→</span><p>Your session lasts 7 days — you won't need to sign in on every visit from the same device.</p></div>
         </div>
       </div>
 
-      <!-- Footer -->
       <div class="text-center text-gray-400 text-sm pb-6">
         Purley Sports Club &mdash; Padel League &mdash; Leagues 2026
       </div>
